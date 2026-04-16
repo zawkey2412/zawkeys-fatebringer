@@ -9,12 +9,8 @@ export async function showDiceAnimation(roll) {
     } catch {}
   }
 
-  // Fallback: play a sound using the native Foundry AudioHelper (v14 API)
-  AudioHelper.play({
-    src: `modules/${MODULE_ID}/assets/dice_roll.ogg`,
-    volume: 0.5,
-    loop: false,
-  });
+  // Fallback: play a sound using the v14 API.
+  game.audio.play(`modules/${MODULE_ID}/assets/dice_roll.ogg`, { volume: 0.5 });
 
   await new Promise(resolve => setTimeout(resolve, DELAYS.DICE_ANIMATION));
 }

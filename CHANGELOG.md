@@ -11,6 +11,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.1.1] — 2026-04-16
+
+### Fixed
+- `AudioHelper.play()` was removed in Foundry v14. Replaced with `game.audio.play()` so the dice sound fallback (used when Dice So Nice is not installed) no longer throws `ReferenceError: AudioHelper is not defined` and breaks table rolls.
+
+---
+
 ## [1.1.0] — 2026-04-16
 
 ### Fixed

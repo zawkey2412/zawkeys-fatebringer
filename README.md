@@ -282,6 +282,11 @@ Download the [latest release](https://github.com/zawkey2412/zawkeys-fatebringer/
 
 ## Changelog
 
+### v1.1.1
+
+**Fixed**
+- `AudioHelper` removed in Foundry v14 — replaced with `game.audio.play()`. Table rolls now work correctly when Dice So Nice is not installed.
+
 ### v1.1.0
 
 **Fixed**
