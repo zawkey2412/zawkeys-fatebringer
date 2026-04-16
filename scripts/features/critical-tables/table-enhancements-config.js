@@ -83,11 +83,14 @@ export class TableEnhancementsConfig extends ApplicationV2 {
       const existing = all[this._tableUuid] ?? {};
       for (const [id, data] of Object.entries(existing)) {
         this._state[id] = {
-          effects: (data.effects ?? []).map(e => ({ ...e })),
+          effects: (data.effects ?? []).map(e => ({ ...e, duration: e.duration ?? 0 })),
           macro:   data.macro ?? "",
         };
       }
       this._stateLoaded = true;
+
+      // Pre-populate preview names for existing UUIDs (fire-and-forget).
+      this._preloadPreviews();
     }
 
     const titleSuffix = this._eventLabel ? ` — ${this._eventLabel}` : "";
@@ -194,15 +197,19 @@ export class TableEnhancementsConfig extends ApplicationV2 {
       `<option value="${v}" ${(eff.target ?? "self") === v ? "selected" : ""}>${l}</option>`
     ).join("");
 
-    const showCount = (eff.target ?? "self") === "choose";
+    const showCount    = (eff.target ?? "self") === "choose";
+    const previewName  = eff._previewName ?? "";
 
     return `
       <div class="fb-effect-row" data-result-id="${resultId}" data-effect-idx="${idx}">
-        <input type="text"
-               class="fb-input fb-effect-uuid"
-               data-result-id="${resultId}" data-effect-idx="${idx}"
-               value="${eff.uuid ?? ""}"
-               placeholder="ActiveEffect UUID…">
+        <div class="fb-effect-uuid-wrap">
+          <input type="text"
+                 class="fb-input fb-effect-uuid"
+                 data-result-id="${resultId}" data-effect-idx="${idx}"
+                 value="${eff.uuid ?? ""}"
+                 placeholder="${game.i18n.localize("FATEBRINGER.TableEnhancements.UuidPlaceholder")}">
+          <span class="fb-effect-preview">${previewName}</span>
+        </div>
         <select class="fb-select fb-effect-target"
                 data-result-id="${resultId}" data-effect-idx="${idx}">
           ${targetOpts}
@@ -211,8 +218,14 @@ export class TableEnhancementsConfig extends ApplicationV2 {
                class="fb-input fb-effect-count"
                data-result-id="${resultId}" data-effect-idx="${idx}"
                min="1" value="${eff.count ?? 1}"
-               title="Number of targets to choose"
+               title="${game.i18n.localize("FATEBRINGER.TableEnhancements.CountTitle")}"
                style="${showCount ? "" : "display:none;"}">
+        <input type="number"
+               class="fb-input fb-effect-duration"
+               data-result-id="${resultId}" data-effect-idx="${idx}"
+               min="0" value="${eff.duration ?? 0}"
+               title="${game.i18n.localize("FATEBRINGER.TableEnhancements.DurationTitle")}"
+               placeholder="${game.i18n.localize("FATEBRINGER.TableEnhancements.DurationPlaceholder")}">
         <button type="button"
                 data-action="removeEffect"
                 data-result-id="${resultId}" data-effect-idx="${idx}"
@@ -234,7 +247,10 @@ export class TableEnhancementsConfig extends ApplicationV2 {
 
       if (el.classList.contains("fb-effect-uuid")) {
         const eff = this._getEff(el);
-        if (eff) eff.uuid = el.value.trim();
+        if (eff) {
+          eff.uuid = el.value.trim();
+          this._updateEffectPreview(el, eff.uuid);
+        }
       }
 
       if (el.classList.contains("fb-effect-target")) {
@@ -252,11 +268,73 @@ export class TableEnhancementsConfig extends ApplicationV2 {
         if (eff) eff.count = Math.max(1, parseInt(el.value) || 1);
       }
 
+      if (el.classList.contains("fb-effect-duration")) {
+        const eff = this._getEff(el);
+        if (eff) eff.duration = Math.max(0, parseInt(el.value) || 0);
+      }
+
       if (el.classList.contains("fb-macro-input")) {
         this._ensureResult(el.dataset.resultId);
         this._state[el.dataset.resultId].macro = el.value.trim();
       }
     });
+
+    // Drag-and-drop: accept ActiveEffect documents dropped onto UUID inputs.
+    root.addEventListener("dragover", e => {
+      if (e.target?.closest(".fb-effect-uuid")) e.preventDefault();
+    });
+
+    root.addEventListener("drop", async e => {
+      const input = e.target?.closest(".fb-effect-uuid");
+      if (!input) return;
+      e.preventDefault();
+
+      let data;
+      try { data = JSON.parse(e.dataTransfer.getData("text/plain")); } catch { return; }
+      if (data?.type !== "ActiveEffect" || !data?.uuid) return;
+
+      input.value = data.uuid;
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  }
+
+  /**
+   * After the form has rendered, resolve names for any pre-existing UUIDs
+   * and inject them into the preview spans.
+   */
+  async _preloadPreviews() {
+    for (const [resultId, data] of Object.entries(this._state)) {
+      for (let idx = 0; idx < (data.effects ?? []).length; idx++) {
+        const uuid = data.effects[idx].uuid?.trim();
+        if (!uuid) continue;
+        const input = this.element?.querySelector(
+          `.fb-effect-uuid[data-result-id="${resultId}"][data-effect-idx="${idx}"]`
+        );
+        if (input) this._updateEffectPreview(input, uuid);
+      }
+    }
+  }
+
+  /** Fetch the effect name for a UUID and display it as a preview label. */
+  async _updateEffectPreview(uuidInput, uuid) {
+    const row     = uuidInput.closest(".fb-effect-row");
+    const preview = row?.querySelector(".fb-effect-preview");
+    if (!preview) return;
+
+    if (!uuid) {
+      preview.textContent = "";
+      return;
+    }
+
+    preview.textContent = game.i18n.localize("FATEBRINGER.TableEnhancements.PreviewLoading");
+    try {
+      const doc = await fromUuid(uuid);
+      preview.textContent = doc?.name
+        ? `→ ${doc.name}`
+        : game.i18n.localize("FATEBRINGER.TableEnhancements.PreviewInvalid");
+    } catch {
+      preview.textContent = game.i18n.localize("FATEBRINGER.TableEnhancements.PreviewInvalid");
+    }
   }
 
   /** Read the effect object pointed to by data-result-id + data-effect-idx. */
@@ -282,7 +360,7 @@ export class TableEnhancementsConfig extends ApplicationV2 {
 
     const effects = this._state[resultId].effects;
     const newIdx  = effects.length;
-    const newEff  = { uuid: "", target: "self", count: 1 };
+    const newEff  = { uuid: "", target: "self", count: 1, duration: 0 };
     effects.push(newEff);
 
     // Append row directly — no full re-render needed.
@@ -314,8 +392,15 @@ export class TableEnhancementsConfig extends ApplicationV2 {
     // Strip results with no meaningful content
     const cleaned = {};
     for (const [resultId, data] of Object.entries(this._state)) {
-      const validEffects = (data.effects ?? []).filter(e => e.uuid?.trim());
-      const hasMacro     = !!(data.macro?.trim());
+      const validEffects = (data.effects ?? [])
+        .filter(e => e.uuid?.trim())
+        .map(({ uuid, target, count, duration }) => ({
+          uuid,
+          target:   target   ?? "self",
+          count:    count    ?? 1,
+          duration: duration ?? 0,
+        }));
+      const hasMacro = !!(data.macro?.trim());
       if (validEffects.length > 0 || hasMacro) {
         cleaned[resultId] = {
           effects: validEffects,

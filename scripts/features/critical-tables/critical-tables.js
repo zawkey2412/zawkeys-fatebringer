@@ -17,7 +17,7 @@ import {
   shouldTriggerForCategory,
   getOptionsFromCache,
 } from "./roll-detection.js";
-import { addTableButton, setupChatListeners } from "./table-handler.js";
+import { addTableButton, setupChatListeners, invalidateTableCache } from "./table-handler.js";
 import {
   getUsedRoll,
   checkPermission,
@@ -118,6 +118,8 @@ function onChatMessage(message) {
   if (!shouldTriggerForCategory(rollData, options)) return;
   if (!checkPermission(rollData, game.user.id)) return;
 
+  // Cap the dedup set so it doesn't grow forever over a long session.
+  if (_processedIds.size > 500) _processedIds.clear();
   _processedIds.add(message.id);
   processRoll(rollData, message);
 }
@@ -177,5 +179,10 @@ export function initializeCriticalTables() {
     Hooks.on("midi-qol.AttackRollComplete", onMidiAttackComplete);
   }
   Hooks.on("createChatMessage", onChatMessage);
+
+  // Invalidate the per-table document cache whenever a table is edited,
+  // so the next roll always reflects the current state.
+  Hooks.on("updateRollTable", (table) => invalidateTableCache(table.uuid));
+
   setupChatListeners();
 }

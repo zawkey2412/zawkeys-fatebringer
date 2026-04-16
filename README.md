@@ -59,9 +59,16 @@ Fatebringer listens to every d20 roll and fires the right response automatically
 Link any existing Active Effect to a fate event by UUID. When a crit or fumble triggers, Fatebringer:
 
 1. Resolves the UUID with Foundry's `fromUuid()`.
-2. Copies the effect data and stamps the origin as `Module.fatebringer`.
+2. Copies the effect data, forces it active, and stamps the origin for tracking.
 3. Applies it to the actor with `actor.createEmbeddedDocuments()`.
-4. Posts a styled chat card confirming which effect was applied to whom.
+4. Posts a styled chat card confirming which effect was applied to whom, with a GM-only **Remove Effects** button to instantly revert.
+
+Additional controls per effect:
+
+- **Duration** — set a round count (`0` = permanent). Times Up will expire it automatically.
+- **Duplicate guard** — the same effect won't stack on an actor that already has it from this module.
+- **Drag-and-drop** — drag an `ActiveEffect` from an item sheet directly onto the UUID field.
+- **Live preview** — the UUID field resolves to the effect's name as you type or drop.
 
 Works with vanilla Foundry effects and is greatly enhanced by **DAE** and **Times Up** (see [Recommended Modules](#recommended-modules)).
 
@@ -72,7 +79,7 @@ A GM tool for dramatic moments — randomly choose one or more tokens from your 
 - **Deity system** — configure multiple deities, each with a name, title, and avatar image.
 - **Custom messages** — write any number of message templates using `{name}` (selected tokens) and `{title}` (deity title) placeholders.
 - **Token exclusion** — in the selection dialog, click any token to exclude it from the pool. Excluded tokens are greyed out and skipped when rolling. Click again to re-include. This lets you adjust the pool on the fly without starting over.
-- **Hotkey** — default `Z`, remappable in Foundry's Keybindings menu (GM only).
+- **Hotkey** — default `Z`, configurable directly in the module settings panel as **Divine Selection Key** (GM only). Accepts any `KeyboardEvent.code` value.
 - Selected tokens are automatically controlled and targeted on the canvas.
 
 ### Feature Toggles
@@ -146,10 +153,14 @@ Download the [latest release](https://github.com/zawkey2412/zawkeys-fatebringer/
 
 1. **Create or find an Active Effect** — effects live inside items or actors. Common workflow: create a world item (e.g. "Crit Effects"), add Active Effects to it, each representing one outcome.
 2. **Get the effect's UUID** — open the item sheet, right-click (or **Shift-click**) the effect row → **Copy UUID**. It will look like `Item.xxxxxxxx.ActiveEffect.yyyyyyyy`.
-3. **Open Critical Tables config** and paste the UUID into the **Active Effect UUID** field for the matching event.
-4. Save. When that event fires, Fatebringer applies the effect to the rolling actor and posts a chat confirmation.
+3. **Open Critical Tables config**, click **✏ Enhance** next to a table, and add effects per result.
+   - **Drag-and-drop** the effect from the item sheet directly onto the UUID field, or paste the UUID manually.
+   - The field shows `→ Effect Name` as a live preview once resolved.
+4. **Set targeting** — Self (roller), Choose (opens a picker), All Players, or All Scene Tokens.
+5. **Set duration (optional)** — enter a round count, or leave at `0` for permanent. Requires **Times Up** to auto-expire.
+6. Save. When that event fires, Fatebringer applies the effect and posts a chat card. The **Remove Effects** button (GM only) on the card lets you instantly undo all applied effects from that roll.
 
-> **Tip:** You can configure both a Roll Table and an Active Effect for the same event. Both fire in parallel — the table result posts to chat and the effect is applied simultaneously.
+> **Tip:** You can configure both a Roll Table and an Active Effect for the same result. Both fire together — the table result posts to chat and the effect is applied simultaneously.
 
 ### Divine Selection Setup
 
@@ -157,13 +168,19 @@ Download the [latest release](https://github.com/zawkey2412/zawkeys-fatebringer/
 2. **Open the config** — click **Configure** next to _Configure Divine Selection_.
 3. **Configure Deities** — add deity names, titles, and optional avatar images (use the browse button to pick from your media library).
 4. **Configure Messages** — write message templates. Use `{name}` for the selected token names and `{title}` for the deity's title. You can add as many messages as you like; one is picked at random each time.
-5. **Use it** — select 2 or more tokens on the canvas, press **Z** (or your configured hotkey). A dialog appears showing all selected tokens.
+5. **Use it** — select 2 or more tokens on the canvas, press **Z** (or your configured key). A dialog appears showing all selected tokens.
 6. **Exclude tokens (optional)** — click any token portrait in the dialog to exclude it from the pool (it will dim and show a ✕). Click again to re-include. Only included tokens are candidates when rolling.
 7. **Choose count** — pick how many tokens to randomly select from the included pool, then click **Divine Selection**.
 
 ---
 
 ## Configuration Reference
+
+### General Settings
+
+| Setting              | Default | Description                                                                                                          |
+| -------------------- | ------- | -------------------------------------------------------------------------------------------------------------------- |
+| Divine Selection Key | `KeyZ`  | `KeyboardEvent.code` value that triggers Divine Selection (GM only). Change without a reload. Find codes at keycode.info. |
 
 ### Critical Tables Options
 
@@ -228,11 +245,13 @@ Download the [latest release](https://github.com/zawkey2412/zawkeys-fatebringer/
 - The UUID must point to a **RollTable** document. Copy it by right-clicking the table in the sidebar → **Copy UUID**.
 - Make sure the table has at least one result row and is not empty.
 
-**Active Effect not applying**
+**Active Effect not applying / applied but has no mechanical effect**
 
 - The UUID must point to an **ActiveEffect** embedded in an actor or item, not the parent document itself. Right-click (or **Shift-click**) the effect row on the sheet.
 - Foundry format: `Actor.xxxxx.ActiveEffect.yyyyy` or `Item.xxxxx.ActiveEffect.yyyyy`.
 - The rolling actor must be on the canvas and linked to a world actor (not an unlinked token actor) for the effect to persist.
+- The effect preview in the enhancements editor shows `⚠ invalid UUID` if the UUID cannot be resolved — verify the UUID is correct.
+- If the card says "applied" but nothing changes: this was a known bug fixed in v1.1.0. Update the module.
 
 **Button appears but clicking it does nothing**
 
@@ -247,9 +266,9 @@ Download the [latest release](https://github.com/zawkey2412/zawkeys-fatebringer/
 **Divine Selection does nothing when I press Z**
 
 - Confirm _Enable Divine Selection_ is on.
-- You must be logged in as a **GM** — the keybinding is restricted.
+- You must be logged in as a **GM** — the key is GM-only.
 - At least one token must be **selected** (left-click on the canvas) before pressing the hotkey.
-- The key is remappable: _Game Settings → Controls → Fatebringer → Divine Selection_.
+- The key is configurable in _Module Settings → Divine Selection Key_. Default is `KeyZ`. The input must be a `KeyboardEvent.code` value — find yours at keycode.info.
 
 **Divine Selection: "No deities configured"**
 
@@ -262,6 +281,21 @@ Download the [latest release](https://github.com/zawkey2412/zawkeys-fatebringer/
 ---
 
 ## Changelog
+
+### v1.1.0
+
+**Fixed**
+- Active Effects embedded in items (`disabled: true` on source) were being created on actors but remained inactive. They now always apply as enabled.
+- Table document cache invalidates correctly when a GM edits a table mid-session.
+
+**Added**
+- **Divine Selection Key** module setting — change the trigger key without going to Configure Controls.
+- **Effect duration** field per enhancement row (rounds; `0` = permanent). Works with Times Up for auto-expiry.
+- **Drag-and-drop** ActiveEffect onto UUID fields in the enhancements editor.
+- **Live effect name preview** next to UUID fields — resolves to the effect's name as you type or drop.
+- **Duplicate effect guard** — same effect won't stack on an actor that already has it from this module.
+- **Remove Effects button** on result cards (GM only) — instantly reverts all effects applied by that roll.
+- Effect target picker now shows the actual effect name instead of "the effect".
 
 ### v1.0.0 — Initial Release
 
@@ -280,7 +314,7 @@ First public release of Zawkey's Fatebringer for Foundry VTT v14.
 - Deity system — configure multiple deities, each with a name, title, and avatar image used as the chat speaker.
 - Custom message templates with `{name}` and `{title}` placeholders; one is picked at random per invocation.
 - **Token exclusion** — click any token portrait in the selection dialog to exclude it from the pool (dims with a ✕ overlay). Click again to re-include. The count selector and Divine Selection button update live.
-- Default hotkey `Z`, remappable in Foundry's native Keybindings menu (GM only).
+- Default hotkey `Z`, configurable in module settings.
 
 **Settings & UI**
 - Independent on/off toggles for Critical Tables and Divine Selection — no world reload required.

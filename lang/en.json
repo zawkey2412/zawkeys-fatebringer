@@ -11,6 +11,10 @@
         "Name": "Enable Divine Selection",
         "Hint": "Enables the Divine Selection feature. When disabled, the keybinding will have no effect and the feature is completely inert."
       },
+      "DivineSelectionKey": {
+        "Name": "Divine Selection Key",
+        "Hint": "Keyboard key code that triggers Divine Selection (GM only). Use the KeyboardEvent code format — e.g. KeyZ, KeyG, F5, Space. Find your key's code at keycode.info."
+      },
       "EnableCriticalTables": {
         "Name": "Enable Critical Tables",
         "Hint": "Enables the Critical Tables feature. When disabled, no crit/fumble roll tables or active effects will trigger on any roll."
@@ -59,6 +63,9 @@
       "Rolling": "Rolling...",
       "EffectApplied": "Effects applied to",
       "EffectFailed": "Failed to apply active effect",
+      "RemoveEffects": "Remove Effects",
+      "EffectsRemoved": "Effects removed",
+      "EffectsRemovedCount": "Removed {count} active effect(s).",
       "Disabled": "Critical Tables is disabled in module settings",
       "EnhanceNoUuid": "Enter a Roll Table UUID first, then click Enhance.",
       "EnhanceInvalidTable": "That UUID does not point to a valid RollTable."
@@ -74,6 +81,12 @@
       "TargetAllPlayers": "All players",
       "TargetAllTokens": "All scene tokens",
       "MacroLabel": "Macro (optional):",
+      "UuidPlaceholder": "ActiveEffect UUID… (or drag-and-drop)",
+      "CountTitle": "Number of targets to choose",
+      "DurationTitle": "Duration in rounds (0 = permanent)",
+      "DurationPlaceholder": "∞",
+      "PreviewLoading": "…",
+      "PreviewInvalid": "⚠ invalid UUID",
       "SavedFor": "Enhancements saved for \"{name}\"."
     },
 

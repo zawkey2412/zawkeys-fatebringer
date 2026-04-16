@@ -23,6 +23,7 @@ export const DELAYS = {
 export const SETTINGS_KEYS = {
   ENABLE_DIVINE:      "enableDivineSelection",
   ENABLE_CRITS:       "enableCriticalTables",
+  DIVINE_KEYBIND:     "divineSelectionKey",
   DEITY_CONFIG:       "deityConfig",
   CUSTOM_MESSAGES:    "customMessages",
   TABLES_CONFIG:      "criticalTablesConfig",
@@ -32,8 +33,9 @@ export const SETTINGS_KEYS = {
 
 /** Message flag keys stored under MODULE_ID. */
 export const FLAG_KEYS = {
-  AVATAR:          "avatar",
-  PROCESSED_MIDI:  "processedByMidi",
-  IS_CRIT:         "isCrit",
-  EVENT_KEY:       "eventKey",
+  AVATAR:           "avatar",
+  PROCESSED_MIDI:   "processedByMidi",
+  IS_CRIT:          "isCrit",
+  EVENT_KEY:        "eventKey",
+  APPLIED_EFFECTS:  "appliedEffects",
 };

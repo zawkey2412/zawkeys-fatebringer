@@ -7,21 +7,6 @@ import { clearCache } from "./core/cache.js";
 
 Hooks.once("init", () => {
   registerSettings();
-
-  // Register native Foundry keybinding — configurable in the Keybindings UI.
-  // Toggle check is at invocation time so no world reload is required.
-  game.keybindings.register(MODULE_ID, "divineSelection", {
-    name: "FATEBRINGER.KeybindingName",
-    hint: "FATEBRINGER.KeybindingHint",
-    editable: [{ key: "KeyZ" }],
-    restricted: true,
-    precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL,
-    onDown: () => {
-      if (!game.settings.get(MODULE_ID, SETTINGS_KEYS.ENABLE_DIVINE)) return false;
-      randomSelectToken();
-      return true;
-    },
-  });
 });
 
 Hooks.on("updateSetting", (setting) => {
@@ -47,4 +32,20 @@ Hooks.on("ready", () => {
   // Hooks are always registered; the feature toggle is checked at call-time
   // inside each handler so the GM can flip it without reloading the world.
   initializeCriticalTables();
+
+  // Divine Selection keybind — reads the configured key from module settings
+  // so GMs can change it without touching Configure Controls.
+  document.addEventListener("keydown", (event) => {
+    if (event.repeat) return;
+    if (!game.user?.isGM) return;
+    if (!game.settings.get(MODULE_ID, SETTINGS_KEYS.ENABLE_DIVINE)) return;
+    // Ignore keypresses while typing in inputs / chat
+    if (event.target?.closest("input, textarea, select, [contenteditable]")) return;
+
+    const keyBind = game.settings.get(MODULE_ID, SETTINGS_KEYS.DIVINE_KEYBIND)?.trim() || "KeyZ";
+    if (event.code !== keyBind) return;
+
+    event.preventDefault();
+    randomSelectToken();
+  });
 });

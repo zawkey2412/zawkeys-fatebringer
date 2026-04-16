@@ -26,6 +26,15 @@ const SETTINGS = {
     type: Boolean,
     default: true,
   },
+  [SETTINGS_KEYS.DIVINE_KEYBIND]: {
+    name: "FATEBRINGER.Settings.DivineSelectionKey.Name",
+    hint: "FATEBRINGER.Settings.DivineSelectionKey.Hint",
+    scope: "world",
+    config: true,
+    type: String,
+    default: "KeyZ",
+    restricted: true,
+  },
 
   // ── Complex data — managed via config-menu dialogs ────────────────────────
   [SETTINGS_KEYS.DEITY_CONFIG]: {

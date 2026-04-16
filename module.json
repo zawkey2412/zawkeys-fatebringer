@@ -2,7 +2,7 @@
   "id": "critically-fumbled",
   "title": "Zawkey's Fatebringer",
   "description": "A comprehensive Foundry VTT module for D&D 5e that automatically detects critical failures and successes, then triggers roll tables or applies Active Effects to the actor. Also includes divine selection for randomly choosing tokens with deity blessings. Works standalone or enhanced with midi-qol.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "authors": [{ "name": "Zawkey2412" }],
   "compatibility": { "minimum": "14", "verified": "14" },
   "esmodules": ["scripts/main.js"],

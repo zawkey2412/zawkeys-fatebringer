@@ -15,7 +15,7 @@ import { MODULE_ID, FLAG_KEYS, SETTINGS_KEYS } from "../../core/const.js";
 import { getColors, createStyledCard, sanitizeText } from "../../core/utils.js";
 import { showDiceAnimation } from "./dice-utils.js";
 import { checkButtonPermission } from "./roll-utils.js";
-import { getCachedOrSet } from "../../core/cache.js";
+import { getCachedOrSet, deleteCached } from "../../core/cache.js";
 import { TargetSelectorDialog } from "./target-selector.js";
 
 // ---------------------------------------------------------------------------
@@ -40,44 +40,85 @@ export async function addTableButton(message, rollData) {
 
 export function setupChatListeners() {
   document.addEventListener("click", async (event) => {
+    // ── Roll button ─────────────────────────────────────────────────────────
     const btn = event.target?.closest(".fb-roll-btn");
-    if (!btn) return;
+    if (btn) {
+      event.preventDefault();
+      event.stopPropagation();
 
-    event.preventDefault();
-    event.stopPropagation();
+      const messageEl = btn.closest("[data-message-id]");
+      const messageId = messageEl?.dataset?.messageId;
+      const message   = messageId ? game.messages.get(messageId) : null;
+      if (!message) return;
 
-    const messageEl = btn.closest("[data-message-id]");
-    const messageId = messageEl?.dataset?.messageId;
-    const message   = messageId ? game.messages.get(messageId) : null;
-    if (!message) return;
-
-    const rollData = _parseRollDataFromMessage(message);
-    if (rollData && !checkButtonPermission(rollData, game.user.id)) {
-      ui.notifications.warn(
-        rollData.actor
-          ? game.i18n.localize("FATEBRINGER.Errors.OwnerOnly")
-          : game.i18n.localize("FATEBRINGER.Errors.PermissionDenied")
-      );
-      return;
-    }
-
-    const tableUuid = btn.dataset.tableUuid;
-    if (!tableUuid) {
-      ui.notifications.error(game.i18n.localize("FATEBRINGER.CriticalTables.NoTable"));
-      return;
-    }
-
-    try {
-      const table = await _getTableFromCache(tableUuid);
-      if (table?.documentName === "RollTable") {
-        await _rollTableAndUpdate(table, btn, message, tableUuid, rollData);
-      } else {
-        ui.notifications.error(game.i18n.localize("FATEBRINGER.CriticalTables.InvalidTable"));
+      const rollData = _parseRollDataFromMessage(message);
+      if (rollData && !checkButtonPermission(rollData, game.user.id)) {
+        ui.notifications.warn(
+          rollData.actor
+            ? game.i18n.localize("FATEBRINGER.Errors.OwnerOnly")
+            : game.i18n.localize("FATEBRINGER.Errors.PermissionDenied")
+        );
+        return;
       }
-    } catch {
-      ui.notifications.error(game.i18n.localize("FATEBRINGER.CriticalTables.RollFailed"));
+
+      const tableUuid = btn.dataset.tableUuid;
+      if (!tableUuid) {
+        ui.notifications.error(game.i18n.localize("FATEBRINGER.CriticalTables.NoTable"));
+        return;
+      }
+
+      try {
+        const table = await _getTableFromCache(tableUuid);
+        if (table?.documentName === "RollTable") {
+          await _rollTableAndUpdate(table, btn, message, tableUuid, rollData);
+        } else {
+          ui.notifications.error(game.i18n.localize("FATEBRINGER.CriticalTables.InvalidTable"));
+        }
+      } catch {
+        ui.notifications.error(game.i18n.localize("FATEBRINGER.CriticalTables.RollFailed"));
+      }
+      return;
+    }
+
+    // ── Remove-effects button ────────────────────────────────────────────────
+    const removeBtn = event.target?.closest(".fb-remove-effects-btn");
+    if (removeBtn) {
+      event.preventDefault();
+      if (!game.user.isGM) {
+        ui.notifications.warn(game.i18n.localize("FATEBRINGER.Errors.PermissionDenied"));
+        return;
+      }
+
+      const messageEl = removeBtn.closest("[data-message-id]");
+      const message   = game.messages.get(messageEl?.dataset?.messageId);
+      if (!message) return;
+
+      const appliedEffects = message.getFlag(MODULE_ID, FLAG_KEYS.APPLIED_EFFECTS) ?? [];
+      let removed = 0;
+      for (const { actorId, id: effectId } of appliedEffects) {
+        const actor = game.actors.get(actorId);
+        if (!actor) continue;
+        if (actor.effects.get(effectId)) {
+          await actor.deleteEmbeddedDocuments("ActiveEffect", [effectId]);
+          removed++;
+        }
+      }
+
+      await message.unsetFlag(MODULE_ID, FLAG_KEYS.APPLIED_EFFECTS);
+      removeBtn.disabled = true;
+      removeBtn.innerHTML = `<i class="fas fa-check"></i> ${game.i18n.localize("FATEBRINGER.CriticalTables.EffectsRemoved")}`;
+      if (removed > 0) {
+        ui.notifications.info(
+          game.i18n.format("FATEBRINGER.CriticalTables.EffectsRemovedCount", { count: removed })
+        );
+      }
     }
   });
+}
+
+/** Exported so critical-tables.js can hook updateRollTable for cache invalidation. */
+export function invalidateTableCache(tableUuid) {
+  deleteCached(`table_${tableUuid}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -105,8 +146,9 @@ async function _handleRollTable(tableUuid, message, rollData, options) {
         speaker: rollData.speaker,
         flags: {
           [MODULE_ID]: {
-            [FLAG_KEYS.PROCESSED_MIDI]: rollData.processedByMidi,
-            [FLAG_KEYS.IS_CRIT]:        isCrit,
+            [FLAG_KEYS.PROCESSED_MIDI]:  rollData.processedByMidi,
+            [FLAG_KEYS.IS_CRIT]:         isCrit,
+            [FLAG_KEYS.APPLIED_EFFECTS]: appliedTo,
           },
         },
       });
@@ -147,6 +189,11 @@ async function _rollTableAndUpdate(table, btn, message, tableUuid, rollData) {
 
     await message.update({
       content: _buildResultContent(title, colors, result, appliedTo),
+      flags: {
+        [MODULE_ID]: {
+          [FLAG_KEYS.APPLIED_EFFECTS]: appliedTo,
+        },
+      },
     });
   } catch (err) {
     console.error(`${MODULE_ID} | Table roll failed:`, err);
@@ -163,12 +210,12 @@ async function _rollTableAndUpdate(table, btn, message, tableUuid, rollData) {
 
 /**
  * Look up per-result enhancements and execute them.
- * Returns an array of actor names that received effects.
+ * Returns an array of { id, actorId, name } for each successfully applied effect.
  *
  * @param {string}      tableUuid
  * @param {string|null} resultId   — the TableResult document ID
  * @param {object}      rollData   — { actor, speaker, isCrit, ... }
- * @returns {Promise<string[]>}
+ * @returns {Promise<Array<{id: string, actorId: string, name: string}>>}
  */
 async function _executeEnhancements(tableUuid, resultId, rollData) {
   if (!resultId) return [];
@@ -183,10 +230,17 @@ async function _executeEnhancements(tableUuid, resultId, rollData) {
   for (const effectConfig of effects) {
     if (!effectConfig.uuid?.trim()) continue;
 
-    const targets = await _resolveTargets(effectConfig, rollData);
+    // Resolve the effect name for the target picker label.
+    let effectName = "the effect";
+    try {
+      const preview = await fromUuid(effectConfig.uuid.trim());
+      if (preview?.name) effectName = preview.name;
+    } catch { /* name stays generic */ }
+
+    const targets = await _resolveTargets(effectConfig, rollData, effectName);
     for (const actor of targets) {
-      const ok = await _applyEffectToActor(actor, effectConfig.uuid);
-      if (ok) appliedTo.push(actor.name);
+      const result = await _applyEffectToActor(actor, effectConfig.uuid, effectConfig.duration ?? 0);
+      if (result) appliedTo.push(result);
     }
   }
 
@@ -209,9 +263,10 @@ async function _executeEnhancements(tableUuid, resultId, rollData) {
  *
  * @param {{ target: string, count?: number }} effectConfig
  * @param {object} rollData
+ * @param {string} effectName  Human-readable name for the target picker
  * @returns {Promise<Actor[]>}
  */
-async function _resolveTargets(effectConfig, rollData) {
+async function _resolveTargets(effectConfig, rollData, effectName = "the effect") {
   switch (effectConfig.target) {
     case "self":
       return rollData.actor ? [rollData.actor] : [];
@@ -236,7 +291,7 @@ async function _resolveTargets(effectConfig, rollData) {
       try {
         return await TargetSelectorDialog.prompt({
           maxTargets: effectConfig.count ?? Infinity,
-          effectName: "the effect",
+          effectName,
         });
       } catch {
         return [];
@@ -250,26 +305,47 @@ async function _resolveTargets(effectConfig, rollData) {
 
 /**
  * Apply a single ActiveEffect (by UUID) to an actor, without posting a chat card.
- * Returns true on success.
+ *
+ * @param {Actor}  actor
+ * @param {string} effectUuid
+ * @param {number} [duration=0]  Rounds to apply (0 = permanent)
+ * @returns {Promise<{id: string, actorId: string, name: string}|null>}
  */
-async function _applyEffectToActor(actor, effectUuid) {
+async function _applyEffectToActor(actor, effectUuid, duration = 0) {
   try {
     const effectDoc = await fromUuid(effectUuid);
     if (!effectDoc || effectDoc.documentName !== "ActiveEffect") {
       console.warn(`${MODULE_ID} | UUID "${effectUuid}" is not an ActiveEffect — skipped.`);
-      return false;
+      return null;
     }
 
     const data = effectDoc.toObject();
+
+    // Guard: don't stack the same effect on an actor that already has it.
+    const originKey = `Module.${MODULE_ID}.${effectUuid}`;
+    if (actor.effects.some(e => e.origin === originKey)) {
+      console.log(`${MODULE_ID} | "${actor.name}" already has "${data.name}" — skipped duplicate.`);
+      return null;
+    }
+
     delete data._id;
     data.transfer = false;
-    data.origin   = `Module.${MODULE_ID}`;
+    data.disabled = false;
+    data.origin   = originKey;
 
-    await actor.createEmbeddedDocuments("ActiveEffect", [data]);
-    return true;
+    if (duration > 0) {
+      data.duration = {
+        rounds:     duration,
+        startRound: game.combat?.round ?? 0,
+        startTime:  game.time?.worldTime ?? 0,
+      };
+    }
+
+    const [created] = await actor.createEmbeddedDocuments("ActiveEffect", [data]);
+    return { id: created.id, actorId: actor.id, name: actor.name };
   } catch (err) {
     console.error(`${MODULE_ID} | Failed applying effect to "${actor.name}":`, err);
-    return false;
+    return null;
   }
 }
 
@@ -284,11 +360,18 @@ function _buildResultContent(title, colors, result, appliedTo = []) {
     .filter(Boolean)
     .join(", ");
 
-  const appliedSection = appliedTo.length > 0
+  const names = appliedTo.map(e => e?.name ?? e).filter(Boolean);
+
+  const appliedSection = names.length > 0
     ? `<div class="fb-applied-effects">
          <i class="fas fa-magic"></i>
          ${game.i18n.localize("FATEBRINGER.CriticalTables.EffectApplied")}:
-         <strong>${appliedTo.join(", ")}</strong>
+         <strong>${names.join(", ")}</strong>
+         <button type="button" class="fb-remove-effects-btn fb-btn fb-btn--sm fb-btn--danger"
+                 title="${game.i18n.localize("FATEBRINGER.CriticalTables.RemoveEffects")}">
+           <i class="fas fa-times-circle"></i>
+           ${game.i18n.localize("FATEBRINGER.CriticalTables.RemoveEffects")}
+         </button>
        </div>`
     : "";
 

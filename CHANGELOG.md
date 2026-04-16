@@ -11,6 +11,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.1.0] — 2026-04-16
+
+### Fixed
+- **Active Effects not applying** — effects embedded inside items (spells, features, etc.) are stored with `disabled: true` on the parent. Fatebringer now always forces `disabled: false` when copying an effect to an actor, so it actually activates on application.
+- Table document cache now invalidates when a GM edits a roll table mid-session; previously stale results could be rolled after an edit.
+- `_processedIds` deduplication set is now capped at 500 entries to prevent unbounded memory growth in long sessions.
+
+### Added
+- **Divine Selection keybind setting** — the trigger key (`Z` by default) is now a plain module setting visible in the Foundry settings panel. Change it to any `KeyboardEvent.code` value (e.g. `KeyG`, `F5`) without navigating to Configure Controls. Takes effect immediately, no reload.
+- **Effect duration** — each effect row in the Table Result Enhancements editor has a duration field (rounds). Set `0` for permanent. Duration is forwarded to `data.duration` on the applied effect, so Times Up can expire it automatically.
+- **Drag-and-drop UUID input** — drag an `ActiveEffect` directly from an item sheet or the sidebar onto the UUID field in the enhancements editor instead of copying and pasting UUIDs manually.
+- **Effect name preview** — the UUID field now resolves and shows the effect's name live (`→ Blinded`) after you type or drop a UUID. Shows `⚠ invalid UUID` when the UUID is unreachable.
+- **Duplicate effect guard** — Fatebringer tracks applied effects by their source UUID; the same effect cannot be stacked on the same actor twice from the same source.
+- **Remove Effects button** — GM-only button on every result card that applied effects. Clicking it deletes all effects that were applied by that specific roll and marks the button as done.
+- Effect target picker ("Choose targets…") now shows the actual effect name in the heading instead of the generic "the effect".
+
+---
+
 ## [1.0.0] — 2026-04-16
 
 ### Added
