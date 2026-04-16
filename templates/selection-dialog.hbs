@@ -1,0 +1,49 @@
+<form class="fb-selection-dialog">
+
+  {{!-- Token grid --}}
+  <div class="fb-selection-header">
+    <span class="fb-selection-title">
+      <i class="fas fa-hand-sparkles"></i>
+      {{total}} token{{#if (gt total 1)}}s{{/if}} available
+    </span>
+  </div>
+
+  <div class="fb-token-grid">
+    {{#each tokens}}
+      <div class="fb-token-item fb-token-item--included" data-token-index="{{@index}}" title="{{this.name}} — click to exclude">
+        <img class="fb-token-img" src="{{this.img}}" alt="{{this.name}}" />
+        <span class="fb-token-name">{{this.name}}</span>
+      </div>
+    {{/each}}
+  </div>
+
+  <p class="fb-token-exclude-hint">
+    <i class="fas fa-info-circle"></i>
+    Click a token to exclude them from the selection pool.
+    <span class="fb-token-included-count">{{total}}</span> of {{total}} included.
+  </p>
+
+  {{!-- Count selector --}}
+  <div class="fb-selection-count-row">
+    <label class="fb-selection-count-label" for="fb-count-select">
+      <i class="fas fa-dice"></i>
+      How many to select?
+    </label>
+    <select id="fb-count-select" name="count" class="fb-select">
+      {{#each options}}
+        <option value="{{this.value}}">{{this.label}}</option>
+      {{/each}}
+    </select>
+  </div>
+
+  {{!-- Actions --}}
+  <div class="fb-selection-actions">
+    <button type="button" data-action="cancel" class="fb-btn">
+      <i class="fas fa-times"></i> Cancel
+    </button>
+    <button type="button" data-action="select" class="fb-btn fb-btn--primary">
+      <i class="fas fa-hand-sparkles"></i> Divine Selection
+    </button>
+  </div>
+
+</form>

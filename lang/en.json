@@ -1,0 +1,96 @@
+{
+  "FATEBRINGER": {
+    "KeybindingName": "Divine Selection",
+    "KeybindingHint": "Randomly selects from your controlled tokens with a divine blessing message. GM only. Configure in Settings → Controls.",
+    "Hotkey": "Divine Selection Key",
+    "HotkeyHint": "Press this key to invoke divine intervention and randomly choose from your selected tokens.",
+    "SelectTokens": "You must choose at least 1 token before divine selection can occur.",
+
+    "Settings": {
+      "EnableDivineSelection": {
+        "Name": "Enable Divine Selection",
+        "Hint": "Enables the Divine Selection feature. When disabled, the keybinding will have no effect and the feature is completely inert."
+      },
+      "EnableCriticalTables": {
+        "Name": "Enable Critical Tables",
+        "Hint": "Enables the Critical Tables feature. When disabled, no crit/fumble roll tables or active effects will trigger on any roll."
+      },
+      "DeityConfig": {
+        "Name": "Deity Configuration",
+        "Hint": "Configure divine beings, their titles, and avatar images."
+      },
+      "CustomMessages": {
+        "Name": "Custom Messages",
+        "Hint": "Configure divine intervention messages used during divine selection."
+      },
+      "CriticalTablesConfig": {
+        "Name": "Critical Tables Configuration",
+        "Hint": "Configure roll tables for critical hits and fumbles."
+      },
+      "TableEnhancements": {
+        "Name": "Table Result Enhancements",
+        "Hint": "Per-result Active Effect and Macro automation for roll tables."
+      },
+      "CriticalTablesOptions": {
+        "Name": "Critical Tables Options",
+        "Hint": "Configure critical tables trigger behavior."
+      }
+    },
+
+    "Menus": {
+      "DivineSelectionConfig": {
+        "Name": "Configure Divine Selection",
+        "Label": "Configure",
+        "Hint": "Configure deities and divine intervention messages."
+      },
+      "CriticalTablesConfig": {
+        "Name": "Configure Critical Tables",
+        "Label": "Configure",
+        "Hint": "Configure roll tables and active effects for critical hits and fumbles."
+      }
+    },
+
+    "CriticalTables": {
+      "NoTable": "No table UUID found",
+      "InvalidTable": "Invalid table — UUID does not point to a RollTable",
+      "RollFailed": "Failed to roll table",
+      "NoMessage": "Could not find message ID",
+      "NoOriginalMessage": "Could not find original message",
+      "Rolling": "Rolling...",
+      "EffectApplied": "Effects applied to",
+      "EffectFailed": "Failed to apply active effect",
+      "Disabled": "Critical Tables is disabled in module settings",
+      "EnhanceNoUuid": "Enter a Roll Table UUID first, then click Enhance.",
+      "EnhanceInvalidTable": "That UUID does not point to a valid RollTable."
+    },
+
+    "TableEnhancements": {
+      "Title": "Table Result Enhancements",
+      "LoadFailed": "Could not load RollTable. Check the UUID and try again.",
+      "NoResults": "This table has no results.",
+      "AddEffect": "Add Effect",
+      "TargetSelf": "Self (roller)",
+      "TargetChoose": "Choose targets\u2026",
+      "TargetAllPlayers": "All players",
+      "TargetAllTokens": "All scene tokens",
+      "MacroLabel": "Macro (optional):",
+      "SavedFor": "Enhancements saved for \"{name}\"."
+    },
+
+    "TargetSelector": {
+      "Title": "Select Targets",
+      "NoActors": "No actors found on the current scene.",
+      "Confirm": "Apply Effects",
+      "Cancel": "Cancel"
+    },
+
+    "Errors": {
+      "TableProcessFailed": "Zawkey's Fatebringer: Failed to process table",
+      "RollNoResult": "Roll failed to produce a result",
+      "NoTableResult": "No table result found for roll",
+      "OwnerOnly": "Only the character owner or GM can roll this table",
+      "PermissionDenied": "Permission denied",
+      "FeatureDisabled": "This Zawkey's Fatebringer feature is currently disabled in settings"
+    }
+  }
+}

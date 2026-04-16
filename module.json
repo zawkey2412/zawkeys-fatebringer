@@ -1,0 +1,39 @@
+{
+  "id": "critically-fumbled",
+  "title": "Zawkey's Fatebringer",
+  "description": "A comprehensive Foundry VTT module for D&D 5e that automatically detects critical failures and successes, then triggers roll tables or applies Active Effects to the actor. Also includes divine selection for randomly choosing tokens with deity blessings. Works standalone or enhanced with midi-qol.",
+  "version": "1.0.0",
+  "authors": [{ "name": "Zawkey2412" }],
+  "compatibility": { "minimum": "14", "verified": "14" },
+  "esmodules": ["scripts/main.js"],
+  "styles": ["styles/zawkeys-fatebringer.css"],
+  "languages": [{ "lang": "en", "name": "English", "path": "lang/en.json" }],
+  "relationships": {
+    "recommends": [
+      {
+        "id": "midi-qol",
+        "type": "module",
+        "manifest": "https://github.com/tposney/midi-qol/releases/latest/download/module.json",
+        "reason": "Enhanced attack roll detection with advantage/disadvantage tracking. The module works without it using native dnd5e hooks."
+      },
+      {
+        "id": "dae",
+        "type": "module",
+        "manifest": "https://gitlab.com/tposney/dae/-/raw/master/package/module.json",
+        "reason": "Dynamic Active Effects — greatly expands what Active Effects can do (attribute overrides, roll bonuses, flags). Recommended when using the Active Effect feature of Critical Tables."
+      },
+      {
+        "id": "times-up",
+        "type": "module",
+        "manifest": "https://gitlab.com/tposney/times-up/-/raw/master/package/module.json",
+        "reason": "Allows Active Effects applied by Zawkey's Fatebringer to expire automatically after a set duration or number of turns/rounds."
+      }
+    ]
+  },
+  "url": "https://github.com/zawkey2412/zawkeys-fatebringer",
+  "manifest": "https://github.com/zawkey2412/zawkeys-fatebringer/releases/latest/download/module.json",
+  "download": "https://github.com/zawkey2412/zawkeys-fatebringer/releases/latest/download/module.zip",
+  "license": "MIT",
+  "bugs": "https://github.com/zawkey2412/zawkeys-fatebringer/issues",
+  "changelog": "https://github.com/zawkey2412/zawkeys-fatebringer/releases"
+}

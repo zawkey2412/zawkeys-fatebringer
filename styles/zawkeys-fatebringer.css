@@ -1,0 +1,831 @@
+/* ============================================================
+   Zawkey's Fatebringer — module stylesheet
+
+   Font-size scale (relative to container base of 13px):
+     base     = 13px  (set once on dialog containers)
+     normal   = 1em   (inherits base — most text)
+     small    = 0.85em (~11px)
+     x-small  = 0.77em (~10px)
+
+   Color philosophy:
+     - Let Foundry's native theme handle backgrounds & text.
+     - Only set background on buttons and themed chat cards.
+     - Keep green / red for semantic states (crit, fumble, danger, add).
+     - Use #888 only for genuinely muted / placeholder text.
+   ============================================================ */
+
+/* ── Foundry dialog reset ──────────────────────────────────── */
+dialog {
+  padding: 0 !important;
+}
+
+/* ── Chat card base ─────────────────────────────────────────── */
+.fb-card {
+  border: 2px solid var(--fb-color, #888);
+  border-radius: 5px;
+  padding: 10px;
+  margin: 5px;
+  background: rgba(var(--fb-bg, 128, 128, 128), 0.08);
+}
+
+.fb-card h4 {
+  text-align: center;
+  margin: 0 0 10px;
+}
+
+/* Crit (green) variant */
+.fb-card[data-result="crit"] {
+  --fb-color: #4caf50;
+  --fb-bg: 76, 175, 80;
+}
+
+/* Fumble (red) variant */
+.fb-card[data-result="fumble"] {
+  --fb-color: #f72525;
+  --fb-bg: 255, 107, 107;
+}
+
+/* ── Card body ───────────────────────────────────────────────── */
+.fb-card-body {
+  background: rgba(var(--fb-bg, 128, 128, 128), 0.1);
+  padding: 10px;
+  margin: 5px;
+  border-radius: 5px;
+}
+
+.fb-card-body--centered {
+  text-align: center;
+}
+
+/* ── Shared text elements ────────────────────────────────────── */
+.fb-label {
+  text-align: center;
+  margin: 5px 0;
+}
+
+.fb-rolled-value {
+  text-align: center;
+  margin: 5px 0;
+  font-weight: bold;
+  color: var(--fb-color, inherit);
+}
+
+.fb-result-text {
+  text-align: center;
+  margin: 5px 0;
+}
+
+/* ── Effect card extras ──────────────────────────────────────── */
+.fb-effect-name {
+  font-style: italic;
+  text-align: center;
+  margin: 4px 0;
+}
+
+.fb-effect-target {
+  text-align: center;
+  font-size: 0.85em;
+  margin: 2px 0;
+}
+
+/* ── Roll button ─────────────────────────────────────────────── */
+.fb-roll-btn {
+  display: block;
+  padding: 8px 16px;
+  margin: 5px auto;
+  background: var(--fb-color, #888);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  height: auto;
+  line-height: 1.4;
+  transition: opacity 0.15s;
+}
+
+.fb-roll-btn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.fb-roll-btn:disabled,
+.fb-roll-btn--rolling {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ── Applied-effects footer in result cards ─────────────────── */
+.fb-applied-effects {
+  margin-top: 8px;
+  padding: 5px 8px;
+  border-top: 1px dashed rgba(var(--fb-bg, 128, 128, 128), 0.4);
+  font-size: 0.85em;
+  text-align: center;
+  color: inherit;
+}
+
+.fb-applied-effects i {
+  margin-right: 4px;
+  opacity: 0.8;
+}
+
+/* ── Enhance button (Critical Tables config) ─────────────────── */
+.fb-enhance-btn {
+  flex-shrink: 0;
+  font-size: 0.85em;
+  padding: 2px 7px;
+  align-self: center;
+  border: 1px solid #bbb;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1.6;
+  background: transparent;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+}
+.fb-enhance-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+.fb-enhance-btn--active {
+  font-weight: bold;
+}
+
+/* ── Table Enhancements editor ───────────────────────────────── */
+.fb-enhancements-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  font-size: 13px;
+  overflow: hidden;
+}
+
+.fb-enhance-header {
+  padding: 10px 14px 6px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.fb-enhance-title {
+  margin: 0 0 6px;
+  font-size: 1.08em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fb-enhance-hint {
+  font-size: 0.85em;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.fb-enhance-results-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fb-enhance-result {
+  border: 1px solid #d0d0d0;
+  border-radius: 5px;
+  padding: 8px 10px;
+}
+
+.fb-enhance-result-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.fb-enhance-range {
+  flex-shrink: 0;
+  font-size: 0.85em;
+  font-weight: bold;
+  border-radius: 3px;
+  padding: 1px 6px;
+}
+
+.fb-enhance-text {
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+.fb-enhance-effects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.fb-effect-row {
+  display: grid;
+  grid-template-columns: 1fr 160px 52px 28px;
+  gap: 4px;
+  align-items: center;
+}
+
+.fb-effect-count {
+  text-align: center;
+}
+
+.fb-enhance-result-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fb-macro-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.fb-macro-label {
+  font-size: 0.85em;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fb-macro-input {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85em;
+}
+
+.fb-enhance-error {
+  padding: 20px;
+  color: #c00;
+}
+
+.fb-enhance-footer {
+  padding: 8px 14px;
+  border-top: 1px solid #d0d0d0;
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+/* ── Target Selector dialog ──────────────────────────────────── */
+.fb-target-selector {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 10px 14px;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.fb-target-hint {
+  margin: 0;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+.fb-target-list {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fb-target-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.1s;
+  border: 1px solid transparent;
+}
+.fb-target-row:hover {
+  background: rgba(74, 144, 217, 0.07);
+  border-color: #c5d8f0;
+}
+
+.fb-target-row input[type="checkbox"] {
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.fb-target-img {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+  flex-shrink: 0;
+}
+
+.fb-target-name {
+  font-size: 0.9em;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fb-target-empty {
+  padding: 10px;
+  font-size: 0.9em;
+  color: #888;
+  text-align: center;
+  margin: 0;
+}
+
+.fb-target-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 4px;
+  border-top: 1px solid #e0e0e0;
+  flex-shrink: 0;
+}
+
+.fb-target-count {
+  font-size: 0.9em;
+}
+
+.fb-target-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* ── Small button variant ─────────────────────────────────────── */
+.fb-btn--sm {
+  font-size: 0.85em;
+  padding: 2px 8px;
+}
+.fb-btn--secondary {
+  background: transparent;
+}
+
+/* ── Settings form layout ────────────────────────────────────── */
+.form-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.form-header {
+  margin-bottom: 15px;
+  flex-shrink: 0;
+}
+.form-footer {
+  text-align: right;
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+/* Deity row grid: Name | Title | Avatar path | Browse */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr auto;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.message-row {
+  margin-bottom: 10px;
+}
+.message-textarea {
+  width: 100%;
+  height: 60px;
+  resize: vertical;
+}
+
+/* ============================================================
+   Divine Selection — config dialog
+   ============================================================ */
+
+/* Outer wrapper fills the ApplicationV2 content area */
+.fb-config-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+/* ── Shared button primitives ───────────────────────────────── */
+.fb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: 1px solid #c0c0c0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  line-height: 1.5;
+  transition:
+    background 0.1s,
+    border-color 0.1s;
+  white-space: nowrap;
+}
+.fb-btn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.08);
+}
+.fb-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.fb-btn--icon {
+  padding: 3px 7px;
+}
+
+.fb-btn--danger {
+  color: #c00;
+  border-color: #f9a0a0;
+}
+.fb-btn--danger:hover:not(:disabled) {
+  background: #fff0f0;
+}
+
+.fb-btn--add {
+  color: #1a7f37;
+  border-color: #7ec8a0;
+}
+.fb-btn--add:hover:not(:disabled) {
+  background: #f0fff5;
+}
+
+.fb-btn--primary {
+  background: #4a90d9;
+  border-color: #3a7bbf;
+  font-weight: bold;
+  padding: 6px 18px;
+  font-size: 1em;
+}
+.fb-btn--primary:hover:not(:disabled) {
+  background: #3a7bbf;
+}
+
+/* ── Shared input ───────────────────────────────────────────── */
+.fb-input {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.9em;
+  padding: 3px 6px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+.fb-input:focus {
+  border-color: #4a90d9;
+  outline: none;
+}
+
+.fb-select {
+  font-size: 0.9em;
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.fb-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 52px;
+  resize: vertical;
+  font-size: 0.9em;
+  padding: 5px 7px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-family: inherit;
+  line-height: 1.45;
+}
+.fb-textarea:focus {
+  border-color: #4a90d9;
+  outline: none;
+}
+
+/* ── Tab navigation ─────────────────────────────────────────── */
+.fb-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 10px 12px 0;
+  border-bottom: 2px solid #d0d0d0;
+  flex-shrink: 0;
+}
+
+.fb-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 5px 5px 0 0;
+  cursor: pointer;
+  font-size: 1em;
+  margin-bottom: -2px;
+  transition:
+    background 0.15s;
+}
+.fb-tab-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+.fb-tab-btn--active {
+  border-color: #d0d0d0;
+  font-weight: bold;
+}
+
+.fb-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: #4a90d9;
+  border-radius: 9px;
+  font-size: 0.77em;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* ── Tab panels ─────────────────────────────────────────────── */
+.fb-tab-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.fb-tab-panel--hidden {
+  display: none;
+}
+
+.fb-panel-hint {
+  margin: 0 0 10px;
+  font-style: italic;
+  line-height: 1.5;
+}
+.fb-panel-hint code {
+  background: rgba(0, 0, 0, 0.07);
+  border-radius: 3px;
+  padding: 0 3px;
+  font-style: normal;
+  font-size: 0.85em;
+}
+
+.fb-panel-footer {
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px dashed #ddd;
+}
+
+/* ── Deity list ─────────────────────────────────────────────── */
+.fb-deity-list-header {
+  display: grid;
+  grid-template-columns: 34px 1fr 1fr 2fr 34px;
+  gap: 6px;
+  padding: 0 2px 5px;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.77em;
+  font-weight: bold;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.fb-deity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fb-deity-row {
+  display: grid;
+  grid-template-columns: 34px 1fr 1fr 2fr 34px;
+  gap: 6px;
+  align-items: center;
+  padding: 5px 4px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  transition:
+    background 0.1s,
+    border-color 0.1s;
+}
+.fb-deity-row:hover {
+  background: rgba(74, 144, 217, 0.05);
+  border-color: #c5d8f0;
+}
+
+.fb-deity-avatar-preview {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+  background: #999;
+  flex-shrink: 0;
+}
+
+.fb-avatar-field {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  min-width: 0;
+}
+.fb-avatar-field .fb-input {
+  min-width: 0;
+}
+
+/* ── Message list ───────────────────────────────────────────── */
+.fb-message-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fb-message-item {
+  border: 1px solid #d8d8d8;
+  border-radius: 5px;
+  padding: 8px 10px;
+  transition: border-color 0.1s;
+}
+.fb-message-item:hover {
+  border-color: #aac4e8;
+}
+
+.fb-message-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.fb-message-label {
+  font-size: 0.85em;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.fb-placeholder-hint {
+  font-size: 0.77em;
+  margin: 4px 0 0;
+}
+.fb-placeholder-hint code {
+  background: rgba(0, 0, 0, 0.07);
+  border-radius: 2px;
+  padding: 0 3px;
+}
+
+/* ── Config footer (save bar) ───────────────────────────────── */
+.fb-config-footer {
+  padding: 8px 14px;
+  border-top: 1px solid #d0d0d0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Divine Selection — token selection dialog
+   ============================================================ */
+
+.fb-selection-dialog {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fb-selection-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fb-selection-title {
+  font-size: 1em;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Token exclude hint */
+.fb-token-exclude-hint {
+  margin: -6px 0 0;
+  font-size: 0.77em;
+  color: #888;
+  font-style: italic;
+}
+
+/* Grid of token cards */
+.fb-token-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 190px;
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid #d0d0d0;
+  border-radius: 5px;
+}
+
+.fb-token-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 72px;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+  transition:
+    border-color 0.1s,
+    opacity 0.15s,
+    filter 0.15s;
+}
+.fb-token-item:hover {
+  border-color: #4a90d9;
+  background: rgba(74, 144, 217, 0.06);
+}
+
+/* Excluded (deselected) state */
+.fb-token-item--excluded {
+  opacity: 0.35;
+  filter: grayscale(0.9);
+}
+.fb-token-item--excluded::after {
+  content: "✕";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.4em;
+  color: #f44336;
+  font-weight: bold;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.fb-token-img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background: #999;
+}
+
+.fb-token-name {
+  font-size: 0.77em;
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+/* Count row */
+.fb-selection-count-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.fb-selection-count-label {
+  font-size: 1em;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.fb-selection-count-row .fb-select {
+  flex: 1;
+}
+
+/* Action buttons row */
+.fb-selection-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
